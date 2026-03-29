@@ -25,7 +25,7 @@ import static java.lang.String.format;
 public class GoToDeclarationHandler implements GotoDeclarationHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GoToDeclarationHandler.class);
-    private static final String INLINE_PYTHON_RUN = "python3";
+    private static final String INLINE_PYTHON_RUN = "python";
     private static final List<String> PYTHON_RESOLVABLE_PARAMS = List.of("SCRIPT_PATH", "run", "py", INLINE_PYTHON_RUN);
     private static final List<String> YAML_RESOLVABLE_PARAMS = List.of("file", "PATH", "FILE");
 
@@ -83,6 +83,8 @@ public class GoToDeclarationHandler implements GotoDeclarationHandler {
     }
 
     private String resolvePath(String clickedLine, String relativePath, Configuration configuration) {
+        relativePath = relativePath.replace("\"", "");
+        relativePath = relativePath.replace("'", "");
         if (isPythonPath(clickedLine)) {
             return resolvePythonPath(relativePath, configuration);
         }
@@ -100,7 +102,7 @@ public class GoToDeclarationHandler implements GotoDeclarationHandler {
 
     private String resolvePythonPath(String relativePath, Configuration configuration) {
         if (relativePath.startsWith(INLINE_PYTHON_RUN)) {
-            relativePath = relativePath.replaceFirst(format("%s -m", INLINE_PYTHON_RUN), "");
+            relativePath = relativePath.replaceAll("python\\d(.\\d+)? -m ", "");
         }
         String normalisedPath = relativePath.replace(".", "/");
         normalisedPath = normalisedPath.trim();
