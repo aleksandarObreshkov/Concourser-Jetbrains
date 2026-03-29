@@ -14,6 +14,7 @@
     <depends>org.jetbrains.plugins.yaml</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-      <gotoDeclarationHandler implementation="org.alex.concourserjetbrains.GoToDeclarationHandler"/>
+        <gotoDeclarationHandler implementation="org.alex.concourserjetbrains.GoToDeclarationHandler"/>
+        <postStartupActivity implementation="org.alex.concourserjetbrains.ConfigurationLoader"/>
     </extensions>
 </idea-plugin>
