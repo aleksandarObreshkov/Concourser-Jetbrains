@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>org.alex.concourser-jetbrains</id>
+
+    <name>Concourser</name>
+
+    <vendor url="https://github.com/aleksandarObreshkov/Concourser-Jetbrains">Aleksandar Obreshkov</vendor>
+
+    <description><![CDATA[
+        extension that renders your Concourse pipeline files and
+        provides functionalities such as Ctrl + click navigation and environment variable resolution.
+    ]]></description>
+
+    <depends>com.intellij.modules.json</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+      <gotoDeclarationHandler implementation="org.alex.concourserjetbrains.GoToDeclarationHandler"/>
+    </extensions>
+</idea-plugin>
