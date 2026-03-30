@@ -47,10 +47,8 @@ public class GoToDeclarationHandler implements GotoDeclarationHandler {
         if (sourceElement == null) return null;
 
         var clickedContent = sourceElement.getText();
-        System.out.println("ALEX: Clicked content: "+clickedContent);
 
         String fullPath = resolvePath(clickedLine, clickedContent, configuration);
-        System.out.println("ALEX: Full path: "+fullPath);
         VirtualFile virtualFile = LocalFileSystem.getInstance()
                 .findFileByPath(fullPath);
 

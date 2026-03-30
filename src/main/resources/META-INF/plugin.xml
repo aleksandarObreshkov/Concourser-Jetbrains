@@ -6,7 +6,7 @@
     <vendor url="https://github.com/aleksandarObreshkov/Concourser-Jetbrains">Aleksandar Obreshkov</vendor>
 
     <description><![CDATA[
-        extension that renders your Concourse pipeline files and
+        A JetBrains IDE plugin that renders your Concourse pipeline files and
         provides functionalities such as Ctrl + click navigation and environment variable resolution.
     ]]></description>
 

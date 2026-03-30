@@ -1,117 +1,88 @@
-# IntelliJ Platform Plugin Template
+# Concourser
+Concourser is a JetBrains IDE plugin that renders your Concourse pipeline files and provides functionalities such as Ctrl + click navigation and environment variable resolution.
 
-[![Twitter Follow](https://img.shields.io/badge/follow-%40JBPlatform-1DA1F2?logo=twitter)](https://twitter.com/JBPlatform)
-[![Developers Forum](https://img.shields.io/badge/JetBrains%20Platform-Join-blue)][jb:forum]
+## What this plugin does?
+- enables Ctrl + Click navigation for:
+    - your `file` properties in your task definitions.
+    - your `SCRIPT_PATH` environment variables
+    - your `run` properties inside your task configurations
+- resolves environment variables for your Python scripts based on the global environment variables, defined in your Concourse pipeline file
 
-## Plugin template structure
-
-A generated project contains the following content structure:
-
-```
-.
-├── .run/                   Predefined Run/Debug Configurations
-├── build/                  Output build directory
-├── gradle
-│   ├── wrapper/            Gradle Wrapper
-├── src                     Plugin sources
-│   ├── main
-│   │   ├── kotlin/         Kotlin production sources
-│   │   └── resources/      Resources - plugin.xml, icons, messages
-├── .gitignore              Git ignoring rules
-├── build.gradle.kts        Gradle build configuration
-├── gradle.properties       Gradle configuration properties
-├── gradlew                 *nix Gradle Wrapper script
-├── gradlew.bat             Windows Gradle Wrapper script
-├── README.md               README
-└── settings.gradle.kts     Gradle project settings
+## Configuration
+In order for the extension to work, you need to define a `concourser.json` configuration file following the structure below:
+```json
+{
+    "resources" : {
+        "source-code":"C:\\Users\\aleks\\Projects\\pipeline",
+        "euporie":"C:\\Users\\aleks\\Projects\\js"
+    },
+    "mainPipeline":"pipeline.yaml",
+    "envKey":"envs"
+}
 ```
 
-In addition to the configuration files, the most crucial part is the `src` directory, which contains our implementation
-and the manifest for our plugin – [plugin.xml][file:plugin.xml].
+- `mainPipeline` -> points to the main Concourse pipeline file
+- `envKey` -> if your pipeline defines some environment variables globally, which are then reused in the tasks, you need to define the key of the list here. Here's an example:
+  ```yaml
+        ---
+        resources:
+            # resource definitions
 
-> [!NOTE]
-> To use Java in your plugin, create the `/src/main/java` directory.
+        envs: &global-envs
+            URL: https://google.com
+            MY_VAR: someValue
 
-## Plugin configuration file
 
-The plugin configuration file is a [plugin.xml][file:plugin.xml] file located in the `src/main/resources/META-INF`
-directory.
-It provides general information about the plugin, its dependencies, extensions, and listeners.
+        jobs:
+            - task: "run"
+              file: my-repo/main.yaml
+              env:
+                <<: *global-envs
+  ```
+  In this case, the `envs` array's elements will be added as environment variables in the container that executes the `run` task, so in your `concourser.json` you would need to specify:
+  ```json
+  {
+    "envKey":"envs"
+  }
+  ```
+    - `resources` -> Inside your Concourse pipeline, you are using the resources' names as part of the paths of some files. If you want to enable Ctrl+click navigation for those files, you need to tell the plugin where the real file is, or in other words where the folder that corresponds to the resource is. Here's an example:
+      ```yaml
+      resources:
+      - name: "source-code"
+        type: "git"
+        # other resource configs
+      
+      jobs:
+      - name: "basic"
+        plan:
+        - get: "source-code"
+        - task: "run"
+          file: source-code/task-config.yml
+          env:
+            SCRIPT_PATH: source-code.task
+      ```
 
-You can read more about this file in the [Plugin Configuration File][docs:plugin.xml] section of our documentation.
+      In the sample pipeline above, you have the `source-code` resource, which you are then using to define the path for the `file` property of the `run` task. For the Ctrl + Click to work, you need to define the path ON YOUR MACHINE where the `source-code` folder is:
+      ```json
+      {
+          "resources": {
+              "source-code":"C:\\Users\\my-user\\Projects\\concourse-repo"
+          }
+      }
+      ```
+      > You need to define all the repos you are using in the `resources` object.
+      > For the plugin to work, verify that VS Code [recognises the files](https://code.visualstudio.com/docs/languages/overview#_change-the-language-for-the-selected-file) as YAML/Python.
 
-If you're still not quite sure what this is all about, read our
-introduction: [What is the IntelliJ Platform?][docs:intro]
 
-$H$H Predefined Run/Debug configurations
+## Download
 
-Within the default project structure, there is a `.run` directory provided containing predefined *Run/Debug
-configurations* that expose corresponding Gradle tasks:
+To download the plugin, check the [Releases](https://github.com/aleksandarObreshkov/Concourser-Jetbrains/releases) page.
 
-| Configuration name | Description                                                                                                                                                                         |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Run Plugin         | Runs [`:runIde`][gh:intellij-platform-gradle-plugin-runIde] IntelliJ Platform Gradle Plugin task. Use the *Debug* icon for plugin debugging.                                        |
-| Run Tests          | Runs [`:test`][gradle:lifecycle-tasks] Gradle task.                                                                                                                                 |
-| Run Verifications  | Runs [`:verifyPlugin`][gh:intellij-platform-gradle-plugin-verifyPlugin] IntelliJ Platform Gradle Plugin task to check the plugin compatibility against the specified IntelliJ IDEs. |
-
-> [!NOTE]
-> You can find the logs from the running task in the `idea.log` tab.
-
-## Publishing the plugin
-
-> [!TIP]
-> Make sure to follow all guidelines listed in [Publishing a Plugin][docs:publishing] to follow all recommended and
-> required steps.
-
-Releasing a plugin to [JetBrains Marketplace](https://plugins.jetbrains.com) is a straightforward operation that uses
-the `publishPlugin` Gradle task provided by
-the [intellij-platform-gradle-plugin][gh:intellij-platform-gradle-plugin-docs].
-
-You can also upload the plugin to the [JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/upload)
-manually via UI.
-
-## Useful links
-
-- [IntelliJ Platform SDK Plugin SDK][docs]
-- [IntelliJ Platform Gradle Plugin Documentation][gh:intellij-platform-gradle-plugin-docs]
-- [IntelliJ Platform Explorer][jb:ipe]
-- [JetBrains Marketplace Quality Guidelines][jb:quality-guidelines]
-- [IntelliJ Platform UI Guidelines][jb:ui-guidelines]
-- [JetBrains Marketplace Paid Plugins][jb:paid-plugins]
-- [IntelliJ SDK Code Samples][gh:code-samples]
-
-[docs]: https://plugins.jetbrains.com/docs/intellij
-
-[docs:intro]: https://plugins.jetbrains.com/docs/intellij/intellij-platform.html?from=IJPluginTemplate
-
-[docs:plugin.xml]: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html?from=IJPluginTemplate
-
-[docs:publishing]: https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate
-
-[file:plugin.xml]: ./src/main/resources/META-INF/plugin.xml
-
-[gh:code-samples]: https://github.com/JetBrains/intellij-sdk-code-samples
-
-[gh:intellij-platform-gradle-plugin]: https://github.com/JetBrains/intellij-platform-gradle-plugin
-
-[gh:intellij-platform-gradle-plugin-docs]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
-
-[gh:intellij-platform-gradle-plugin-runIde]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#runIde
-
-[gh:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#verifyPlugin
-
-[gradle:lifecycle-tasks]: https://docs.gradle.org/current/userguide/java_plugin.html#lifecycle_tasks
-
-[jb:github]: https://github.com/JetBrains/.github/blob/main/profile/README.md
-
-[jb:forum]: https://platform.jetbrains.com/
-
-[jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
-
-[jb:paid-plugins]: https://plugins.jetbrains.com/docs/marketplace/paid-plugins-marketplace.html
-
-[jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
-
-[jb:ipe]: https://jb.gg/ipe
-
-[jb:ui-guidelines]: https://jetbrains.github.io/ui
+## Installation
+Once you have downloaded the ZIP file from the previous step, you can install it by following the steps below:
+1. Open your JetBrains IDE's `Settings`
+2. Go into the `Plugins` tab
+3. At the top, you will see two tabs: `Marketplace` and `Installed`. Right next to them is a flywheel icon. Click it.
+4. From the drop-down menu that appears, click on the `Install Plugin from disc` option
+5. When prompted, select the downloaded ZIP file
+6. If you haven't created the `concourser.json` file before the installation of the plugin, you might need to restart your IDE
