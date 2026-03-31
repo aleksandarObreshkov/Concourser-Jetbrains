@@ -10,6 +10,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiManager;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -52,12 +53,12 @@ public class GoToDeclarationHandler implements GotoDeclarationHandler {
         VirtualFile virtualFile = LocalFileSystem.getInstance()
                 .findFileByPath(fullPath);
 
-        ApplicationManager.getApplication().invokeLater(() -> {
-            if (virtualFile != null) {
-                // 2. Open it in the editor
-                FileEditorManager.getInstance(project).openFile(virtualFile, true);
+        if (virtualFile != null) {
+            PsiElement target = PsiManager.getInstance(project).findFile(virtualFile);
+            if (target != null) {
+                return new PsiElement[]{target};
             }
-        });
+        }
         return null;
     }
 
